@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Light / Dark Side Clock</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --light: #00e5ff;
+      --dark: #ff1744;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: black;
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    .clock {
+      text-align: center;
+      padding: 40px 60px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.85);
+      box-shadow: 0 0 30px var(--light);
+      color: var(--light);
+      transition: all 0.4s ease;
+    }
+
+    .time {
+      font-size: 3.5rem;
+      letter-spacing: 4px;
+      text-shadow: 0 0 15px currentColor;
+    }
+
+    .saber {
+      height: 6px;
+      margin-top: 20px;
+      border-radius: 4px;
+      background: currentColor;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    button {
+      margin-top: 22px;
+      background: transparent;
+      border: 1px solid currentColor;
+      color: currentColor;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: currentColor;
+      color: black;
+    }
+
+    .dark {
+      color: var(--dark);
+      box-shadow: 0 0 30px var(--dark);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="clock" class="clock">
+    <div id="time" class="time">12:00:00 AM</div>
+    <div class="saber"></div>
+    <button onclick="toggleSide()">Toggle Light / Dark</button>
+  </div>
+
+  <script>
+    const timeEl = document.getElementById('time');
+    const clockEl = document.getElementById('clock');
+
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours();
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      h = h % 12;
+      h = h ? h : 12; // 0 becomes 12
+
+      timeEl.textContent = `${h}:${m}:${s} ${ampm}`;
+    }
+
+    function toggleSide() {
+      clockEl.classList.toggle('dark');
+    }
+
+    // Initial render
+    updateClock();
+    // Update every second
+    setInterval(updateClock, 1000);
+  </script>
+
+</body>
+</html>
+.
