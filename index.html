@@ -1,109 +1,238 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Light / Dark Side Clock</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Light / Dark Side Clock</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap"
+            rel="stylesheet"
+        />
 
-  <style>
-    :root {
-      --light: #00e5ff;
-      --dark: #ff1744;
-    }
+        <style>
+            :root {
+                --jedi-blue: #00e5ff;
+                --jedi-green: #00ff6a;
+                --jedi-purple: #b388ff;
+                --neutral-white: #f5f5f5;
+                --sith-red: #ff1744;
+                --sith-orange: #ff9100;
+                --background-day: #0a0a0a;
+                --background-night: #000000;
+            }
 
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: black;
-      font-family: 'Orbitron', sans-serif;
-    }
+            body {
+                margin: 0;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: var(--background-day);
+                font-family: "Orbitron", sans-serif;
+                overflow: hidden;
+                position: relative;
+            }
 
-    .clock {
-      text-align: center;
-      padding: 40px 60px;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.85);
-      box-shadow: 0 0 30px var(--light);
-      color: var(--light);
-      transition: all 0.4s ease;
-    }
+            #stars {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 0;
+            }
 
-    .time {
-      font-size: 3.5rem;
-      letter-spacing: 4px;
-      text-shadow: 0 0 15px currentColor;
-    }
+            .clock {
+                position: relative;
+                z-index: 1;
+                text-align: center;
+                padding: 40px 60px;
+                border-radius: 16px;
+                background: rgba(0, 0, 0, 0.85);
+                color: var(--jedi-blue);
+                box-shadow: 0 0 30px var(--jedi-blue);
+                transition: all 1s ease;
+            }
 
-    .saber {
-      height: 6px;
-      margin-top: 20px;
-      border-radius: 4px;
-      background: currentColor;
-      box-shadow: 0 0 18px currentColor;
-    }
+            .time {
+                font-size: 3.5rem;
+                letter-spacing: 4px;
+                text-shadow: 0 0 15px currentColor;
+            }
 
-    button {
-      margin-top: 22px;
-      background: transparent;
-      border: 1px solid currentColor;
-      color: currentColor;
-      padding: 8px 18px;
-      border-radius: 8px;
-      font-family: inherit;
-      cursor: pointer;
-    }
+            .saber {
+                height: 6px;
+                margin-top: 20px;
+                border-radius: 4px;
+                background: currentColor;
+                box-shadow: 0 0 18px currentColor;
+                transition:
+                    box-shadow 0.15s ease,
+                    transform 0.15s ease;
+                position: relative;
+                overflow: visible;
+            }
 
-    button:hover {
-      background: currentColor;
-      color: black;
-    }
+            .pulse {
+                box-shadow: 0 0 35px currentColor;
+                transform: scaleX(1.05);
+            }
 
-    .dark {
-      color: var(--dark);
-      box-shadow: 0 0 30px var(--dark);
-    }
-  </style>
-</head>
-<body>
+            .saber-trail {
+                position: absolute;
+                height: 6px;
+                background: currentColor;
+                box-shadow: 0 0 25px currentColor;
+                top: 0;
+                left: -100%;
+                z-index: -1;
+                border-radius: 4px;
+            }
 
-  <div id="clock" class="clock">
-    <div id="time" class="time">12:00:00 AM</div>
-    <div class="saber"></div>
-    <button onclick="toggleSide()">Toggle Light / Dark</button>
-  </div>
+            .label {
+                margin-top: 14px;
+                font-size: 0.8rem;
+                letter-spacing: 2px;
+                opacity: 0.8;
+                transition: all 1s ease;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="stars"></canvas>
 
-  <script>
-    const timeEl = document.getElementById('time');
-    const clockEl = document.getElementById('clock');
+        <div id="clock" class="clock">
+            <div id="time" class="time">12:00:00 AM</div>
+            <div class="saber">
+                <div class="saber-trail"></div>
+            </div>
+            <div id="label" class="label">JEDI ORDER</div>
+        </div>
 
-    function updateClock() {
-      const now = new Date();
-      let h = now.getHours();
-      const m = String(now.getMinutes()).padStart(2, '0');
-      const s = String(now.getSeconds()).padStart(2, '0');
+        <script>
+            const timeEl = document.getElementById("time");
+            const clockEl = document.getElementById("clock");
+            const saberEl = document.querySelector(".saber");
+            const trailEl = document.querySelector(".saber-trail");
+            const labelEl = document.getElementById("label");
+            const starsCanvas = document.getElementById("stars");
+            const ctx = starsCanvas.getContext("2d");
 
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      h = h % 12;
-      h = h ? h : 12; // 0 becomes 12
+            const jediColors = [
+                "--jedi-blue",
+                "--jedi-green",
+                "--jedi-purple",
+                "--neutral-white",
+            ];
+            const sithColors = ["--sith-red", "--sith-orange"];
 
-      timeEl.textContent = `${h}:${m}:${s} ${ampm}`;
-    }
+            let lastHour = null;
+            let jediIndex = 0;
+            let sithIndex = 0;
 
-    function toggleSide() {
-      clockEl.classList.toggle('dark');
-    }
+            // Resize canvas
+            function resizeCanvas() {
+                starsCanvas.width = window.innerWidth;
+                starsCanvas.height = window.innerHeight;
+            }
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
 
-    // Initial render
-    updateClock();
-    // Update every second
-    setInterval(updateClock, 1000);
-  </script>
+            // Create stars
+            const stars = [];
+            const STAR_COUNT = 150;
+            for (let i = 0; i < STAR_COUNT; i++) {
+                stars.push({
+                    x: Math.random() * starsCanvas.width,
+                    y: Math.random() * starsCanvas.height,
+                    radius: Math.random() * 1.5 + 0.5,
+                    speed: Math.random() * 0.3 + 0.1,
+                });
+            }
 
-</body>
+            function drawStars() {
+                ctx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+                ctx.fillStyle = "white";
+                stars.forEach((star) => {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                    star.y += star.speed;
+                    if (star.y > starsCanvas.height) star.y = 0;
+                });
+                requestAnimationFrame(drawStars);
+            }
+            drawStars();
+
+            function applyColor(cssVar, side) {
+                const value = getComputedStyle(
+                    document.documentElement,
+                ).getPropertyValue(cssVar);
+                clockEl.style.color = value;
+                clockEl.style.boxShadow = `0 0 30px ${value}`;
+                labelEl.textContent =
+                    side === "jedi" ? "JEDI ORDER" : "SITH EMPIRE";
+                trailEl.style.background = value;
+                trailEl.style.boxShadow = `0 0 25px ${value}`;
+            }
+
+            function rotateColorByHour(hour) {
+                const isDay = hour >= 6 && hour < 18;
+                if (isDay) {
+                    applyColor(
+                        jediColors[jediIndex % jediColors.length],
+                        "jedi",
+                    );
+                    jediIndex++;
+                    document.body.style.background = "var(--background-day)";
+                } else {
+                    applyColor(
+                        sithColors[sithIndex % sithColors.length],
+                        "sith",
+                    );
+                    sithIndex++;
+                    document.body.style.background = "var(--background-night)";
+                }
+
+                // Saber trail animation for hour change
+                trailEl.style.transition = "none";
+                trailEl.style.left = "-100%";
+                requestAnimationFrame(() => {
+                    trailEl.style.transition = "left 0.7s ease-out";
+                    trailEl.style.left = "100%";
+                });
+            }
+
+            function updateClock() {
+                const now = new Date();
+                let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, "0");
+                const s = String(now.getSeconds()).padStart(2, "0");
+
+                const ampm = h >= 12 ? "PM" : "AM";
+                h = h % 12;
+                h = h ? h : 12;
+
+                timeEl.textContent = `${h}:${m}:${s} ${ampm}`;
+
+                // Saber pulse
+                saberEl.classList.add("pulse");
+                setTimeout(() => saberEl.classList.remove("pulse"), 120);
+
+                // Hour change detection
+                const currentHour = now.getHours();
+                if (currentHour !== lastHour) {
+                    rotateColorByHour(currentHour);
+                    lastHour = currentHour;
+                }
+            }
+
+            // Initial setup
+            lastHour = new Date().getHours();
+            rotateColorByHour(lastHour);
+            updateClock();
+            setInterval(updateClock, 1000);
+        </script>
+    </body>
 </html>
-.
