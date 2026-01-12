@@ -12,13 +12,15 @@
 
         <style>
             :root {
-                --jedi-blue: #00e5ff;
-                --jedi-green: #00ff6a;
-                --jedi-purple: #b388ff;
-                --neutral-white: #f5f5f5;
+                --jedi-cyan: #00ffff;
+                --jedi-magenta: #ff00ff;
+                --jedi-indigo: #4b0082;
+                --jedi-yellow: #ffee58;
                 --sith-red: #ff1744;
                 --sith-orange: #ff9100;
-                --background-day: #0a0a0a;
+                --sith-yellow: #ffd600;
+                --neutral-white: #e0e0e0;
+                --background-day: #050505;
                 --background-night: #000000;
             }
 
@@ -31,15 +33,12 @@
                 background: var(--background-day);
                 font-family: "Orbitron", sans-serif;
                 overflow: hidden;
-                position: relative;
+                perspective: 1200px; /* enables true 3D tilt */
             }
 
             #stars {
                 position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
+                inset: 0;
                 z-index: 0;
             }
 
@@ -47,55 +46,137 @@
                 position: relative;
                 z-index: 1;
                 text-align: center;
-                padding: 40px 60px;
-                border-radius: 16px;
-                background: rgba(0, 0, 0, 0.85);
-                color: var(--jedi-blue);
-                box-shadow: 0 0 30px var(--jedi-blue);
-                transition: all 1s ease;
+                padding: 120px 190px;
+                border-radius: 28px;
+                background: linear-gradient(
+                    145deg,
+                    rgba(255, 255, 255, 0.08),
+                    rgba(255, 255, 255, 0.02)
+                );
+                backdrop-filter: blur(14px) saturate(140%);
+                -webkit-backdrop-filter: blur(14px) saturate(140%);
+                color: var(--jedi-cyan);
+                box-shadow:
+                    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+                    inset 0 -2px 0 rgba(0, 0, 0, 0.15),
+                    0 30px 70px rgba(0, 0, 0, 0.9),
+                    0 0 40px rgba(255, 255, 255, 0.08);
+                transition:
+                    color 1s ease,
+                    box-shadow 1s ease,
+                    background 1s ease,
+                    transform 0.15s ease-out;
+                overflow: hidden;
+                transform-style: preserve-3d;
+                transform: scale(1.8);
+            }
+
+            .clock::after {
+                content: "";
+                position: absolute;
+                inset: -40%;
+                background: radial-gradient(
+                    circle at 30% 30%,
+                    rgba(255, 255, 255, 0.08),
+                    rgba(255, 255, 255, 0.02) 40%,
+                    transparent 60%
+                );
+                opacity: 0.25;
+                animation: glassRipple 18s linear infinite;
+                pointer-events: none;
+            }
+
+            .clock::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: repeating-linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.035),
+                    rgba(255, 255, 255, 0.035) 1px,
+                    transparent 2px,
+                    transparent 4px
+                );
+                opacity: 0.12;
+                animation: scanlines 14s linear infinite;
+                pointer-events: none;
+            }
+
+            @keyframes glassRipple {
+                0% {
+                    transform: translate(-10%, -10%) rotate(0deg);
+                }
+                50% {
+                    transform: translate(10%, 10%) rotate(180deg);
+                }
+                100% {
+                    transform: translate(-10%, -10%) rotate(360deg);
+                }
+            }
+
+            @keyframes scanlines {
+                from {
+                    background-position-y: 0;
+                }
+                to {
+                    background-position-y: 100%;
+                }
             }
 
             .time {
-                font-size: 3.5rem;
-                letter-spacing: 4px;
-                text-shadow: 0 0 15px currentColor;
+                font-size: 7.8rem;
+                letter-spacing: 6px;
+                color: currentColor;
+                text-shadow:
+                    0 2px 0 rgba(255, 255, 255, 0.45),
+                    0 -2px 0 rgba(0, 0, 0, 0.8),
+                    0 0 18px currentColor,
+                    0 0 36px currentColor;
+                transform: translateZ(40px); /* foreground depth */
             }
 
             .saber {
-                height: 6px;
-                margin-top: 20px;
-                border-radius: 4px;
-                background: currentColor;
-                box-shadow: 0 0 18px currentColor;
-                transition:
-                    box-shadow 0.15s ease,
-                    transform 0.15s ease;
+                height: 20px;
+                margin-top: 34px;
+                border-radius: 14px;
+                background: linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.85),
+                    currentColor,
+                    rgba(0, 0, 0, 0.5)
+                );
+                box-shadow:
+                    inset 0 2px 2px rgba(255, 255, 255, 0.7),
+                    inset 0 -3px 6px rgba(0, 0, 0, 0.9),
+                    0 0 28px currentColor,
+                    0 0 55px currentColor;
                 position: relative;
-                overflow: visible;
+                overflow: hidden;
+                transform: translateZ(20px);
             }
 
             .pulse {
-                box-shadow: 0 0 35px currentColor;
                 transform: scaleX(1.05);
             }
 
             .saber-trail {
                 position: absolute;
-                height: 6px;
-                background: currentColor;
-                box-shadow: 0 0 25px currentColor;
-                top: 0;
+                inset: 0;
+                background: linear-gradient(
+                    to right,
+                    transparent,
+                    currentColor,
+                    transparent
+                );
                 left: -100%;
-                z-index: -1;
-                border-radius: 4px;
             }
 
             .label {
                 margin-top: 14px;
                 font-size: 0.8rem;
                 letter-spacing: 2px;
-                opacity: 0.8;
-                transition: all 1s ease;
+                opacity: 0.85;
+                transform: translateZ(30px);
             }
         </style>
     </head>
@@ -104,10 +185,8 @@
 
         <div id="clock" class="clock">
             <div id="time" class="time">12:00:00 AM</div>
-            <div class="saber">
-                <div class="saber-trail"></div>
-            </div>
-            <div id="label" class="label">JEDI ORDER</div>
+            <div class="saber"><div class="saber-trail"></div></div>
+            <div id="label" class="label">JEDI ORDER · CYAN</div>
         </div>
 
         <script>
@@ -120,82 +199,96 @@
             const ctx = starsCanvas.getContext("2d");
 
             const jediColors = [
-                "--jedi-blue",
-                "--jedi-green",
-                "--jedi-purple",
-                "--neutral-white",
+                { var: "--jedi-cyan", name: "CYAN" },
+                { var: "--jedi-magenta", name: "MAGENTA" },
+                { var: "--jedi-indigo", name: "INDIGO" },
+                { var: "--jedi-yellow", name: "YELLOW" },
             ];
-            const sithColors = ["--sith-red", "--sith-orange"];
+
+            const sithColors = [
+                { var: "--sith-red", name: "RED" },
+                { var: "--sith-orange", name: "ORANGE" },
+                { var: "--sith-yellow", name: "YELLOW" },
+            ];
 
             let lastHour = null;
             let jediIndex = 0;
             let sithIndex = 0;
 
-            // Resize canvas
             function resizeCanvas() {
                 starsCanvas.width = window.innerWidth;
                 starsCanvas.height = window.innerHeight;
             }
+
             window.addEventListener("resize", resizeCanvas);
             resizeCanvas();
 
-            // Create stars
-            const stars = [];
-            const STAR_COUNT = 150;
-            for (let i = 0; i < STAR_COUNT; i++) {
-                stars.push({
-                    x: Math.random() * starsCanvas.width,
-                    y: Math.random() * starsCanvas.height,
-                    radius: Math.random() * 1.5 + 0.5,
-                    speed: Math.random() * 0.3 + 0.1,
-                });
-            }
+            const stars = Array.from({ length: 150 }, () => ({
+                x: Math.random() * starsCanvas.width,
+                y: Math.random() * starsCanvas.height,
+                r: Math.random() * 1.5 + 0.5,
+                s: Math.random() * 0.3 + 0.1,
+            }));
 
             function drawStars() {
                 ctx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
                 ctx.fillStyle = "white";
-                stars.forEach((star) => {
+                for (const star of stars) {
                     ctx.beginPath();
-                    ctx.arc(star.x, star.y, star.radius, 0, 2 * Math.PI);
+                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
                     ctx.fill();
-                    star.y += star.speed;
+                    star.y += star.s;
                     if (star.y > starsCanvas.height) star.y = 0;
-                });
+                }
                 requestAnimationFrame(drawStars);
             }
+
             drawStars();
 
-            function applyColor(cssVar, side) {
-                const value = getComputedStyle(
-                    document.documentElement,
-                ).getPropertyValue(cssVar);
+            // TRUE 3D TILT (rotateX / rotateY)
+            window.addEventListener("mousemove", (e) => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 14;
+                const y = (e.clientY / window.innerHeight - 0.5) * -14;
+                clockEl.style.transform = `scale(1.8) rotateX(${y}deg) rotateY(${x}deg)`;
+            });
+
+            function applyColor(value, label) {
                 clockEl.style.color = value;
-                clockEl.style.boxShadow = `0 0 30px ${value}`;
-                labelEl.textContent =
-                    side === "jedi" ? "JEDI ORDER" : "SITH EMPIRE";
-                trailEl.style.background = value;
-                trailEl.style.boxShadow = `0 0 25px ${value}`;
+                labelEl.textContent = label;
+                trailEl.style.background = `linear-gradient(to right, transparent, ${value}, transparent)`;
             }
 
+            // BALANCE OF THE FORCE (neutral at dawn/dusk)
             function rotateColorByHour(hour) {
-                const isDay = hour >= 6 && hour < 18;
-                if (isDay) {
+                if (hour === 6 || hour === 18) {
+                    const neutral = getComputedStyle(
+                        document.documentElement,
+                    ).getPropertyValue("--neutral-white");
+                    applyColor(neutral, "BALANCE OF THE FORCE");
+                    document.body.style.background = "var(--background-day)";
+                    return;
+                }
+
+                if (hour > 6 && hour < 18) {
+                    const c = jediColors[jediIndex++ % jediColors.length];
                     applyColor(
-                        jediColors[jediIndex % jediColors.length],
-                        "jedi",
+                        getComputedStyle(
+                            document.documentElement,
+                        ).getPropertyValue(c.var),
+                        `JEDI ORDER · ${c.name}`,
                     );
-                    jediIndex++;
                     document.body.style.background = "var(--background-day)";
                 } else {
+                    const c = sithColors[sithIndex++ % sithColors.length];
                     applyColor(
-                        sithColors[sithIndex % sithColors.length],
-                        "sith",
+                        getComputedStyle(
+                            document.documentElement,
+                        ).getPropertyValue(c.var),
+                        `SITH EMPIRE · ${c.name}`,
                     );
-                    sithIndex++;
                     document.body.style.background = "var(--background-night)";
                 }
 
-                // Saber trail animation for hour change
                 trailEl.style.transition = "none";
                 trailEl.style.left = "-100%";
                 requestAnimationFrame(() => {
@@ -209,26 +302,20 @@
                 let h = now.getHours();
                 const m = String(now.getMinutes()).padStart(2, "0");
                 const s = String(now.getSeconds()).padStart(2, "0");
-
                 const ampm = h >= 12 ? "PM" : "AM";
-                h = h % 12;
-                h = h ? h : 12;
+                h = h % 12 || 12;
 
                 timeEl.textContent = `${h}:${m}:${s} ${ampm}`;
 
-                // Saber pulse
                 saberEl.classList.add("pulse");
                 setTimeout(() => saberEl.classList.remove("pulse"), 120);
 
-                // Hour change detection
-                const currentHour = now.getHours();
-                if (currentHour !== lastHour) {
-                    rotateColorByHour(currentHour);
-                    lastHour = currentHour;
+                if (now.getHours() !== lastHour) {
+                    rotateColorByHour(now.getHours());
+                    lastHour = now.getHours();
                 }
             }
 
-            // Initial setup
             lastHour = new Date().getHours();
             rotateColorByHour(lastHour);
             updateClock();
