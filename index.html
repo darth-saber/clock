@@ -9,12 +9,193 @@
             href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap"
             rel="stylesheet"
         />
-        <link rel="stylesheet" href="style.css" />
+
+        <style>
+            :root {
+                --jedi-cyan: #00ffff;
+                --jedi-magenta: #ff00ff;
+                --jedi-indigo: #4b0082;
+                --jedi-yellow: #ffee58;
+                --sith-red: #ff1744;
+                --sith-orange: #ff9100;
+                --sith-yellow: #ffd600;
+                --neutral-white: #e0e0e0;
+                --background-day: #050505;
+                --background-night: #000000;
+            }
+
+            body {
+                margin: 0;
+                height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: "Orbitron", sans-serif;
+                overflow: hidden;
+                perspective: 1200px;
+                background: var(--background-day);
+            }
+
+            #bg-video {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: -2;
+                filter: brightness(0.15) contrast(1.2) saturate(1.3);
+            }
+
+            #stars {
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+            }
+
+            .clock {
+                position: relative;
+                z-index: 1;
+                text-align: center;
+                padding: 50px 80px;
+                border-radius: 28px;
+                background: rgba(0, 0, 0, 0.1);
+                backdrop-filter: blur(20px) saturate(160%);
+                color: var(--jedi-cyan);
+                box-shadow:
+                    0 0 12px currentColor,
+                    0 0 24px currentColor,
+                    0 0 48px currentColor,
+                    0 0 72px currentColor;
+                text-shadow:
+                    0 0 6px currentColor,
+                    0 0 12px currentColor,
+                    0 0 24px currentColor;
+                transition:
+                    color 1s ease,
+                    box-shadow 1s ease,
+                    transform 0.15s ease-out;
+                overflow: hidden;
+                transform-style: preserve-3d;
+                transform: scale(1);
+            }
+
+            .clock::after {
+                content: "";
+                position: absolute;
+                inset: -40%;
+                background: radial-gradient(
+                    circle at 30% 30%,
+                    rgba(255, 255, 255, 0.05),
+                    transparent 50%
+                );
+                opacity: 0.25;
+                animation: glassRipple 18s linear infinite;
+                pointer-events: none;
+            }
+
+            .clock::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: repeating-linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.02),
+                    rgba(255, 255, 255, 0.02) 1px,
+                    transparent 3px,
+                    transparent 5px
+                );
+                opacity: 0.08;
+                animation: scanlines 14s linear infinite;
+                pointer-events: none;
+            }
+
+            @keyframes glassRipple {
+                0% {
+                    transform: translate(-10%, -10%) rotate(0deg);
+                }
+                50% {
+                    transform: translate(10%, 10%) rotate(180deg);
+                }
+                100% {
+                    transform: translate(-10%, -10%) rotate(360deg);
+                }
+            }
+
+            @keyframes scanlines {
+                from {
+                    background-position-y: 0;
+                }
+                to {
+                    background-position-y: 100%;
+                }
+            }
+
+            .time {
+                font-size: 3.5rem;
+                letter-spacing: 6px;
+                color: currentColor;
+                text-shadow:
+                    0 0 8px currentColor,
+                    0 0 16px currentColor,
+                    0 0 32px currentColor;
+                transform: translateZ(40px);
+            }
+
+            .saber {
+                height: 10px;
+                margin-top: 20px;
+                border-radius: 10px;
+                background: linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.85),
+                    currentColor,
+                    rgba(0, 0, 0, 0.5)
+                );
+                box-shadow:
+                    0 0 12px currentColor,
+                    0 0 24px currentColor,
+                    0 0 36px currentColor;
+                position: relative;
+                overflow: hidden;
+                transform: translateZ(20px);
+            }
+
+            .pulse {
+                transform: scaleX(1.05);
+            }
+
+            .saber-trail {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    to right,
+                    transparent,
+                    currentColor,
+                    transparent
+                );
+                left: -100%;
+            }
+
+            .label {
+                margin-top: 10px;
+                font-size: 0.8rem;
+                letter-spacing: 2px;
+                color: currentColor;
+                text-shadow:
+                    0 0 4px currentColor,
+                    0 0 8px currentColor;
+                transform: translateZ(30px);
+            }
+        </style>
     </head>
     <body>
+        <!-- Background Video -->
         <video autoplay muted loop id="bg-video">
             <source src="jedi movivg_his-lightsaber.mp4" type="video/mp4" />
         </video>
+
+        <canvas id="stars"></canvas>
 
         <div id="clock" class="clock">
             <div id="time" class="time">12:00:00 AM</div>
@@ -22,6 +203,135 @@
             <div id="label" class="label">JEDI ORDER · CYAN</div>
         </div>
 
-        <script src="script.js"></script>
+        <script>
+            const timeEl = document.getElementById("time");
+            const clockEl = document.getElementById("clock");
+            const saberEl = document.querySelector(".saber");
+            const trailEl = document.querySelector(".saber-trail");
+            const labelEl = document.getElementById("label");
+            const starsCanvas = document.getElementById("stars");
+            const ctx = starsCanvas.getContext("2d");
+
+            const jediColors = [
+                { var: "--jedi-cyan", name: "CYAN" },
+                { var: "--jedi-magenta", name: "MAGENTA" },
+                { var: "--jedi-indigo", name: "INDIGO" },
+                { var: "--jedi-yellow", name: "YELLOW" },
+            ];
+
+            const sithColors = [
+                { var: "--sith-red", name: "RED" },
+                { var: "--sith-orange", name: "ORANGE" },
+                { var: "--sith-yellow", name: "YELLOW" },
+            ];
+
+            let lastHour = null;
+            let jediIndex = 0;
+            let sithIndex = 0;
+
+            function resizeCanvas() {
+                starsCanvas.width = window.innerWidth;
+                starsCanvas.height = window.innerHeight;
+            }
+
+            window.addEventListener("resize", resizeCanvas);
+            resizeCanvas();
+
+            const stars = Array.from({ length: 150 }, () => ({
+                x: Math.random() * starsCanvas.width,
+                y: Math.random() * starsCanvas.height,
+                r: Math.random() * 1.5 + 0.5,
+                s: Math.random() * 0.3 + 0.1,
+            }));
+
+            function drawStars() {
+                ctx.clearRect(0, 0, starsCanvas.width, starsCanvas.height);
+                ctx.fillStyle = "white";
+                for (const star of stars) {
+                    ctx.beginPath();
+                    ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+                    ctx.fill();
+                    star.y += star.s;
+                    if (star.y > starsCanvas.height) star.y = 0;
+                }
+                requestAnimationFrame(drawStars);
+            }
+
+            drawStars();
+
+            window.addEventListener("mousemove", (e) => {
+                const x = (e.clientX / window.innerWidth - 0.5) * 14;
+                const y = (e.clientY / window.innerHeight - 0.5) * -14;
+                clockEl.style.transform = `scale(1) rotateX(${y}deg) rotateY(${x}deg)`;
+            });
+
+            function applyColor(value, label) {
+                clockEl.style.color = value;
+                labelEl.textContent = label;
+                trailEl.style.background = `linear-gradient(to right, transparent, ${value}, transparent)`;
+            }
+
+            function rotateColorByHour(hour) {
+                if (hour === 6 || hour === 18) {
+                    const neutral = getComputedStyle(
+                        document.documentElement,
+                    ).getPropertyValue("--neutral-white");
+                    applyColor(neutral, "BALANCE OF THE FORCE");
+                    document.body.style.background = "var(--background-day)";
+                    return;
+                }
+
+                if (hour > 6 && hour < 18) {
+                    const c = jediColors[jediIndex++ % jediColors.length];
+                    applyColor(
+                        getComputedStyle(
+                            document.documentElement,
+                        ).getPropertyValue(c.var),
+                        `JEDI ORDER · ${c.name}`,
+                    );
+                    document.body.style.background = "var(--background-day)";
+                } else {
+                    const c = sithColors[sithIndex++ % sithColors.length];
+                    applyColor(
+                        getComputedStyle(
+                            document.documentElement,
+                        ).getPropertyValue(c.var),
+                        `SITH EMPIRE · ${c.name}`,
+                    );
+                    document.body.style.background = "var(--background-night)";
+                }
+
+                trailEl.style.transition = "none";
+                trailEl.style.left = "-100%";
+                requestAnimationFrame(() => {
+                    trailEl.style.transition = "left 0.7s ease-out";
+                    trailEl.style.left = "100%";
+                });
+            }
+
+            function updateClock() {
+                const now = new Date();
+                let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, "0");
+                const s = String(now.getSeconds()).padStart(2, "0");
+                const ampm = h >= 12 ? "PM" : "AM";
+                h = h % 12 || 12;
+
+                timeEl.textContent = `${h}:${m}:${s} ${ampm}`;
+
+                saberEl.classList.add("pulse");
+                setTimeout(() => saberEl.classList.remove("pulse"), 120);
+
+                if (now.getHours() !== lastHour) {
+                    rotateColorByHour(now.getHours());
+                    lastHour = now.getHours();
+                }
+            }
+
+            lastHour = new Date().getHours();
+            rotateColorByHour(lastHour);
+            updateClock();
+            setInterval(updateClock, 1000);
+        </script>
     </body>
 </html>
